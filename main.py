@@ -57,14 +57,14 @@ if __name__ == '__main__':
     # 检查数据
     dataframe = pd.read_csv(train_data)
     print(dataframe.head())
-    train, val = train_test_split(dataframe, test_size=0.2)
+    train, val = train_test_split(dataframe, test_size=0.1)
     print(len(train), 'train examples')
     print(len(val), 'validation examples')
 
     test = pd.read_csv(test_data)
     print(len(test), 'test examples')
 
-    batch_size = 5
+    batch_size = 16
     train_ds = df_to_dataset(train, batch_size=batch_size)
     val_ds = df_to_dataset(val, shuffle=False, batch_size=batch_size)
     test_ds = df_to_dataset(test, shuffle=False, batch_size=batch_size)
@@ -77,66 +77,79 @@ if __name__ == '__main__':
     # 我们将使用该批数据演示几种特征列
     example_batch = next(iter(train_ds))[0]
 
-
     # 用于创建一个特征列
     # 并转换一批次数据的一个实用程序方法
     def demo(feature_column):
         feature_layer = layers.DenseFeatures(feature_column)
         print(feature_layer(example_batch).numpy())
 
-
-    # # CSV文件中列的顺序
-    # column_names = ['age', 'workclass', 'fnlwgt', 'education', 'education-num', 'marital-status', 'occupation', 'relationship', 'race', 'sex', 'capital-gain', 'capital-loss', 'hours-per-week', 'native-country', 'target']
-    # feature_names = column_names[:-1]
-    # label_name = column_names[-1]
-
-    # # class_name = []
-    #
-    # # 创建一个 tf.data.Dataset
-    # batch_size = 32
-    #
-    # train_dataset = tf.data.experimental.make_csv_dataset(
-    #     train_data_fp,
-    #     batch_size,
-    #     column_names=column_names,
-    #     label_name=label_name,
-    #     num_epochs=1)
-    #
-    # features, labels = next(iter(train_dataset))
-    #
-    # print(features)
-
-    # https://www.tensorflow.org/tutorials/structured_data/feature_columns?hl=zh-cn
-    # train_dataset = train_dataset.map(pack_features_vector)
-    #
-    # features, labels = next(iter(train_dataset))
-    #
-    # print(features[:5])
-
     feature_columns = []
 
-    for header in ['age', 'fnlwgt', 'education-num', 'capital-gain', 'capital-loss', 'hours-per-week']:
+    for header in [
+        'age',
+        # 'fnlwgt',
+        'education-num',
+        'capital-gain',
+        'capital-loss',
+        # 'hours-per-week'
+    ]:
         feature_columns.append(feature_column.numeric_column(header))
 
+    # workclass
     workclass = feature_column.categorical_column_with_vocabulary_list(
-        'workclass',
-        ['Private', 'Self-emp-not-inc', 'Self-emp-inc', 'Federal-gov', 'Local-gov', 'State-gov', 'Without-pay',
-         'Never-worked']
+        'workclass', ['Private', 'Self-emp-not-inc', 'Self-emp-inc', 'Federal-gov', 'Local-gov', 'State-gov', 'Without-pay', 'Never-worked']
     )
     workclass_one_hot = feature_column.indicator_column(workclass)
     feature_columns.append(workclass_one_hot)
 
+    # education
+    education = feature_column.categorical_column_with_vocabulary_list(
+        'education', ['Bachelors', 'Some-college', '11th', 'HS-grad', 'Prof-school', 'Assoc-acdm', 'Assoc-voc', '9th', '7th-8th', '12th', 'Masters', '1st-4th', '10th', 'Doctorate', '5th-6th', 'Preschool']
+    )
+    education_one_hot = feature_column.indicator_column(education)
+    feature_columns.append(education_one_hot)
+
+    # marital-status
+    marital = feature_column.categorical_column_with_vocabulary_list(
+        'marital-status', ['Married-civ-spouse', 'Divorced', 'Never-married', 'Separated', 'Widowed', 'Married-spouse-absent', 'Married-AF-spouse']
+    )
+    marital_one_hot = feature_column.indicator_column(marital)
+    # feature_columns.append(marital_one_hot)
+
+    # occupation
+    occupation = feature_column.categorical_column_with_vocabulary_list(
+        'occupation', ['Tech-support', 'Craft-repair', 'Other-service', 'Sales', 'Exec-managerial', 'Prof-specialty', 'Handlers-cleaners', 'Machine-op-inspct', 'Adm-clerical', 'Farming-fishing', 'Transport-moving', 'Priv-house-serv', 'Protective-serv', 'Armed-Forces']
+    )
+    occupation_one_hot = feature_column.indicator_column(occupation)
+    feature_columns.append(occupation_one_hot)
+
+    # relationship
+    relationship = feature_column.categorical_column_with_vocabulary_list(
+        'relationship', ['Wife', 'Own-child', 'Husband', 'Not-in-family', 'Other-relative', 'Unmarried']
+    )
+    relationship_one_hot = feature_column.indicator_column(relationship)
+    # feature_columns.append(relationship_one_hot)
+
+    # race
     race = feature_column.categorical_column_with_vocabulary_list(
         'race', ['White', 'Asian-Pac-Islander', 'Amer-Indian-Eskimo', 'Other', 'Black']
     )
     race_one_hot = feature_column.indicator_column(race)
-    feature_columns.append(race_one_hot)
+    # feature_columns.append(race_one_hot)
 
+    # sex
     sex = feature_column.categorical_column_with_vocabulary_list(
         'sex', ['Female', 'Male']
     )
     sex_one_hot = feature_column.indicator_column(sex)
     feature_columns.append(sex_one_hot)
+
+    # native-country
+    country = feature_column.categorical_column_with_vocabulary_list(
+        'native-country', ['United-States', 'Cambodia', 'England', 'Puerto-Rico', 'Canada', 'Germany', 'Outlying-US(Guam-USVI-etc)', 'India', 'Japan', 'Greece', 'South', 'China', 'Cuba', 'Iran', 'Honduras', 'Philippines', 'Italy', 'Poland', 'Jamaica', 'Vietnam', 'Mexico', 'Portugal', 'Ireland', 'France', 'Dominican-Republic', 'Laos', 'Ecuador', 'Taiwan', 'Haiti', 'Columbia', 'Hungary', 'Guatemala', 'Nicaragua', 'Scotland', 'Thailand', 'Yugoslavia', 'El-Salvador', 'Trinadad&Tobago', 'Peru', 'Hong', 'Holand-Netherlands']
+    )
+    country_one_hot = feature_column.indicator_column(country)
+    # feature_columns.append(country_one_hot)
 
     # target = feature_column.categorical_column_with_vocabulary_list(
     #     'target', ['>50K', '<=50K']
@@ -152,9 +165,9 @@ if __name__ == '__main__':
 
     model = tf.keras.Sequential([
         feature_layer,
-        tf.keras.layers.Dense(10, activation=tf.nn.relu),  # 需要给出输入的形式
-        tf.keras.layers.Dense(10, activation=tf.nn.relu),
-        tf.keras.layers.Dense(3)
+        tf.keras.layers.Dense(12, activation=tf.nn.relu),  # 需要给出输入的形式
+        tf.keras.layers.Dense(12, activation=tf.nn.relu),
+        tf.keras.layers.Dense(1, activation='sigmoid')
     ])
 
     model.compile(optimizer='adam',
@@ -164,9 +177,8 @@ if __name__ == '__main__':
 
     model.fit(train_ds,
               validation_data=val_ds,
-              epochs=5)
+              epochs=10)
 
     loss, accuracy = model.evaluate(test_ds)
     print("Accuracy", accuracy)
 
-    # 使用 Keras 创建模型
