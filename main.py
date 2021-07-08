@@ -50,7 +50,6 @@ if __name__ == '__main__':
     print("TensorFlow version: {}".format(tf.__version__))
     print("Eager execution: {}".format(tf.executing_eagerly()))
 
-
     # train_data_fp = tf.keras.utils.get_file(fname=train_data, origin="file:///D:/workspace/py/tf_start/adult.data.csv")
     # train_data_fp = tf.keras.utils.get_file(fname=train_data, origin="file:///D:/python/tf_start/adult.data.csv")
     # test_data_fp = tf.keras.utils.get_file(fname=train_data, origin="file:///D:/python/tf_start/adult.test.csv")
@@ -163,11 +162,11 @@ if __name__ == '__main__':
                   metrics=['accuracy'],
                   run_eagerly=True)
 
-    # model.fit(train_ds,
-    #           validation_data=val_ds,
-    #           epochs=5)
+    model.fit(train_ds,
+              validation_data=val_ds,
+              epochs=5)
 
-    # loss, accuracy = model.evaluate(test_ds)
-    # print("Accuracy", accuracy)
+    loss, accuracy = model.evaluate(test_ds)
+    print("Accuracy", accuracy)
 
     # 使用 Keras 创建模型
